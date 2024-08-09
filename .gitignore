@@ -1,0 +1,6 @@
+node_modules
+.env
+auth_info_baileys/
+baileys_auth_info/
+
+pnpm-lock.yaml
