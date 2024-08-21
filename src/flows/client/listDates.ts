@@ -1,11 +1,9 @@
 import { proto, WASocket } from '@whiskeysockets/baileys'
 import { DateRepository } from '../../repositories/date'
-import { Session } from '../../types/session.interface'
-import { formatDate } from '../../services/formateDate'
+import { createCardDate } from '../../services/createCardDate'
 
-export const listDates = async (sock: WASocket, messageInfo: proto.IWebMessageInfo, session: Session) => {
+export const listDates = async (sock: WASocket, messageInfo: proto.IWebMessageInfo) => {
   const from = messageInfo.key.remoteJid as string
-  const messageInfoText = messageInfo.message?.conversation || ''
 
   const clientNumber = messageInfo.key.remoteJid?.split('@')[0] as string
 
@@ -16,9 +14,8 @@ export const listDates = async (sock: WASocket, messageInfo: proto.IWebMessageIn
     return
   }
 
-  const message = listDate.map(({ day, hour, doctor }) => {
-    const date = new Date(day)
-    return `${formatDate(date)}: ${hour} - ${doctor}`
-  })
-  await sock.sendMessage(from!, { text: message.join('\n') })
+  // Dibujar la card de la cita. Solo se puede tener una cita por atender por cliente
+  const image = createCardDate(listDate[0])
+
+  await sock.sendMessage(from!, { image: image })
 }

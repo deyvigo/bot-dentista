@@ -2,9 +2,8 @@ import { proto, WASocket } from '@whiskeysockets/baileys'
 import { Session, SessionDoctorHorario } from '../../types/session.interface'
 import { welcolmeDoctor } from './welcome'
 import { horarioDoctor } from './getHorario'
-import { updateHorarioDoctor } from './updateHorario'
 import { getDates } from './getDates'
-import { cancelDate } from '../client/cancelDate'
+import { cancelDate } from './cancelDate'
 import { askToAI } from '../../services/ai'
 import { queries } from './queries'
 
@@ -53,13 +52,13 @@ export const doctorFlow = async (sock: WASocket, messageInfo: proto.IWebMessageI
   // TODO: Hacer un mapeo de mensajes a flujos
   switch (session.flow) {
     case 'saludo':
-      await welcolmeDoctor(sock, messageInfo, session)
+      await welcolmeDoctor(sock, messageInfo)
       break
     case 'horario':
       await horarioDoctor(sock, messageInfo, session)
       break
     case 'citas':
-      await getDates(sock, messageInfo, session) // TODO
+      await getDates(sock, messageInfo, session) // TODO: Draw
       break
     case 'cancelar':
       await cancelDate(sock, messageInfo, session)

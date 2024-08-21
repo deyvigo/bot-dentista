@@ -5,7 +5,7 @@ import { DateRepository } from '../../repositories/date'
 import { DoctorRepository } from '../../repositories/doctor'
 import { askToAI } from '../../services/ai'
 import { formatDate } from '../../services/formateDate'
-import { validateClientResponses } from '../../services/validateResponses'
+import { dateInWorkHours, dateIsFree, dateIsPast, validateClientResponses } from '../../services/validateResponses'
 
 export const createDate = async (sock: WASocket, messageInfo: proto.IWebMessageInfo, session: Session) => {
   const from = messageInfo.key.remoteJid as string
@@ -14,7 +14,6 @@ export const createDate = async (sock: WASocket, messageInfo: proto.IWebMessageI
 
   const clientPayload = session.payload as SessionClientDate
 
-  // TODO: Comprobar si el cliente ya tiene una cita
   // NOTA: Si se quiere que el cliente pueda tener más de una cita, se debe usar el dni para la consulta en lugar del número de teléfono
   const clientDate = await DateRepository.getClientDates(number_client)
 
@@ -79,6 +78,15 @@ export const createDate = async (sock: WASocket, messageInfo: proto.IWebMessageI
       const data = await askToAI(prompt) as string
       const jsonData = await JSON.parse(data) as SessionClientDate
 
+      // comprobar que la hora y dia no sean pasados
+      if (await dateIsPast(session, jsonData, from, sock)) return
+
+      // comprobar que la hora esté dentro del horario de trabajo
+      if (!await dateInWorkHours(session, jsonData, from, sock)) return
+
+      // comprobar que el horario no esté ocupado
+      if (!await dateIsFree(session, jsonData, from, sock)) return
+
       const cliente = await ClientRepository.getClientByNumber(number_client)
       if (cliente.length === 0) {
         await ClientRepository.createClient({ fullname: jsonData.fullname, phone: number_client, dni: jsonData.dni })
@@ -90,16 +98,16 @@ export const createDate = async (sock: WASocket, messageInfo: proto.IWebMessageI
       const id_doctor = doctor[0].id_doctor // Hay un solo doctor
 
       // state = libre para cuando la cita la crea un cliente. ocupado cuando el doctor la va a cancelar
-      const result = await DateRepository.createDate({ day: jsonData.day, hour: jsonData.hour, state: 'libre', id_doctor, id_client })
+      const result = await DateRepository.createDate({ day: jsonData.day, hour: jsonData.hour, state: 'por atender', id_doctor, id_client })
 
       await sock.sendMessage(from!, { text: result })
 
       if (result === 'Cita creada') {
-        const number_doctor = doctor[0].phone
-        // TODO: construir el jid del doctor
-        const doctorJid = `${number_doctor}@s.whatsapp.net`
-        // TODO: para cuando consiga un número de doctor
-        // await sock.sendMessage(doctorJid, { text: 'Doctor, un cliente ha agendado una cita. Por favor, revisa la cita.' })
+        const doctor = await DoctorRepository.getDoctors()
+        const doctorNumber = doctor[0].number_phone
+        const doctorJid = `${doctorNumber}@s.whatsapp.net`
+        // WARN: está en pruebas
+        await sock.sendMessage(doctorJid!, { text: `Doctor, un cliente ha agendado una cita para el día ${jsonData.day}, hora ${jsonData.hour}` })
       }
 
       // Resetear el flujo

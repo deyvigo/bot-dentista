@@ -37,10 +37,10 @@ export const clientFlow = async (sock: WASocket, messageInfo: proto.IWebMessageI
   La accion saludo es la de menor prioridad.
   Respuesta ideal: (saludo|servicios|horario-doctor|consultas|solicitar-cita|cancelar-cita|citas-creadas)
   `
-  
+
   // Obtener la sesión del usuario, o crear una nueva
   let session = userSessions.get(from) || { step: 0, flow: '', payload: {} as SessionClientDate }
-  
+
   // Si el flow es solicitar-cita, no hacer el prompt porque debe salir del flujo desde dentro de la función
   if (session.flow !== 'solicitar-cita') {
     session.flow = (await askToAI(prompt) as string).trim()
@@ -53,13 +53,15 @@ export const clientFlow = async (sock: WASocket, messageInfo: proto.IWebMessageI
     session.flow = session.flow.toLocaleLowerCase().trim()
   }
 
+  console.log('session.flow: ', session.flow)
+
   // TODO: Hacer un mapeo de mensajes a flujos
   switch (session.flow) {
     case 'saludo':
-      await welcomeClient(sock, messageInfo, session)
+      await welcomeClient(sock, messageInfo)
       break
     case 'servicios':
-      await listServices(sock, messageInfo, session)
+      await listServices(sock, messageInfo)
       break
     case 'horario-doctor':
       await doctorSchedule(sock, messageInfo, session)
@@ -71,10 +73,10 @@ export const clientFlow = async (sock: WASocket, messageInfo: proto.IWebMessageI
       await createDate(sock, messageInfo, session)
       break
     case 'cancelar-cita':
-      await cancelDate(sock, messageInfo, session)
+      await cancelDate(sock, messageInfo)
       break
     case 'citas-creadas':
-      await listDates(sock, messageInfo, session)
+      await listDates(sock, messageInfo)
       break
   }
 

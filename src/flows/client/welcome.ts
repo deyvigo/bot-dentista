@@ -1,6 +1,7 @@
+import { proto, WASocket } from "@whiskeysockets/baileys"
 import { askToAI } from "../../services/ai"
 
-export const welcomeClient = async (sock: any, messageInfo: any, session: any) => {
+export const welcomeClient = async (sock: WASocket, messageInfo: proto.IWebMessageInfo) => {
   const from = messageInfo.key.remoteJid as string
   const messageText = messageInfo.message?.conversation || ''
 
@@ -16,7 +17,7 @@ export const welcomeClient = async (sock: any, messageInfo: any, session: any) =
   const aiResponse = await askToAI(prompt) as string
 
   if (aiResponse === 'saludo') {
-    await sock.sendMessage(from!, { text: 'Buenas! Soy un asistente de la consultora dentista Sonrisa Colgate. ¿En qué puedo ayudarte hoy?' })
+    await sock.sendMessage(from!, { text: 'Hola! Soy un asistente de la consultora dentista Sonrisa Colgate. ¿En qué puedo ayudarte hoy?' })
     return
   }
   await sock.sendMessage(from!, { text: 'Disculpa, no puedo responder a ese mensaje.' })

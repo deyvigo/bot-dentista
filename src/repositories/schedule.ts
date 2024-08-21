@@ -22,4 +22,14 @@ export class ScheduleRepository {
       return []
     }
   }
+
+  static getByDay = async (day: string) => {
+    const query = 'SELECT * FROM schedule WHERE day = ?;'
+    try {
+      const [result] = await dbConnection.query<Schedule[]>(query, [day])
+      return result
+    } catch (err) {
+      return []
+    }
+  }
 }

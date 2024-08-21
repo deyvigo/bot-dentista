@@ -3,5 +3,6 @@ export const formatDate = (date: Date) => {
   const day = date.getDate()
   const month = new Intl.DateTimeFormat('es-ES', { month: 'long' }).format(date)
   const year = date.getFullYear()
-  return `${dayOfWeek}, ${day} de ${month} de ${year}`
+  const dayString = dayOfWeek.charAt(0).toUpperCase() + dayOfWeek.slice(1)
+  return `${dayString}, ${day} de ${month} de ${year}`
 }

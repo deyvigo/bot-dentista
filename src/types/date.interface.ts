@@ -14,7 +14,9 @@ export interface DateClient extends RowDataPacket {
   id_date: string,
   day: string,
   hour: string,
-  doctor: string
+  dni: string,
+  fullname: string,
+  doctor: string,
 }
 
 export interface DateCreate {
