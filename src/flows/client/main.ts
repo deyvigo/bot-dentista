@@ -8,6 +8,7 @@ import { cancelDate } from './cancelDate'
 import { listServices } from './listServices'
 import { queries } from './queries'
 import { askToAI } from '../../services/ai'
+import { ClientFlows } from '../../types/utils.types'
 
 // Estado global para rastrear la conversación del usuario
 const userSessions = new Map<string, Session>()
@@ -43,14 +44,14 @@ export const clientFlow = async (sock: WASocket, messageInfo: proto.IWebMessageI
 
   // Si el flow es solicitar-cita, no hacer el prompt porque debe salir del flujo desde dentro de la función
   if (session.flow !== 'solicitar-cita') {
-    session.flow = (await askToAI(prompt) as string).trim()
+    session.flow = (await askToAI(prompt) as string).trim() as ClientFlows
   }
   // Verificar si el mensaje es del propio bot
   if (messageInfo.key.fromMe) return
 
   // Detectar si el mensaje no cambia el flujo
   if (flows.includes(session.flow)) {
-    session.flow = session.flow.toLocaleLowerCase().trim()
+    session.flow = session.flow.toLocaleLowerCase().trim() as ClientFlows
   }
 
   console.log('session.flow: ', session.flow)

@@ -1,9 +1,9 @@
-import { WeekDays } from './utils.types'
+import { ClientFlows, DoctorFlows } from "./utils.types"
 
 export interface Session {
   step: number,
-  flow: string,
-  payload: SessionDoctorHorario | SessionClientDate | {}
+  flow: DoctorFlows | ClientFlows | '',
+  payload: SessionDoctorHorario | SessionClientDate | SessionDoctorServices | {}
 }
 
 export interface SessionDoctorHorario {
@@ -17,4 +17,9 @@ export interface SessionClientDate {
   hour: string,
   dni: string,
   fullname: string
+}
+
+export interface SessionDoctorServices {
+  name: string,
+  price: number,
 }

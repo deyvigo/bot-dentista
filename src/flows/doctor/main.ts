@@ -6,12 +6,13 @@ import { getDates } from './getDates'
 import { cancelDate } from './cancelDate'
 import { askToAI } from '../../services/ai'
 import { queries } from './queries'
+import { DoctorFlows } from '../../types/utils.types'
 
 // Estado global para rastrear la conversación del usuario
 const userSessions = new Map<string, Session>()
 
 // provisional
-const flows = ['saludo', 'horario', 'citas', 'cancelar', 'consultas']
+const flows = ['saludo', 'horario', 'citas', 'cancelar', 'consultas', 'servicios']
 
 export const doctorFlow = async (sock: WASocket, messageInfo: proto.IWebMessageInfo) => {
   const from = messageInfo.key.remoteJid as string
@@ -25,6 +26,7 @@ export const doctorFlow = async (sock: WASocket, messageInfo: proto.IWebMessageI
   - horario: para solicitar el horario de trabajo del doctor
   - citas: para ver las citas que tiene que atender el dentista
   - cancelar: para cancelar citas
+  - servicios: para agregar un nuevo servicio
   - consultas: para realizar consultas sobre odontología
   Este es el mensaje del dentista: ${messageText}
   Debes responder solo la accion que el dentista quiere realizar.
@@ -35,10 +37,10 @@ export const doctorFlow = async (sock: WASocket, messageInfo: proto.IWebMessageI
   `
 
   // Obtener la sesión del usuario, o crear una nueva
-  let session = userSessions.get(from) || { step: 0, flow: '', payload: {} as SessionDoctorHorario }
+  let session = userSessions.get(from) || { step: 0, flow: '', payload: {} }
 
-  if (session.flow !== 'cancelar') {
-    session.flow = (await askToAI(prompt) as string).trim()
+  if (session.flow !== 'cancelar' && session.flow !== 'servicios') {
+    session.flow = (await askToAI(prompt) as string).trim() as DoctorFlows
   }
 
   // Verificar si el mensaje es del propio bot
@@ -46,7 +48,7 @@ export const doctorFlow = async (sock: WASocket, messageInfo: proto.IWebMessageI
 
   // Detectar si el mensaje no cambia el flujo
   if (flows.includes(session.flow)) {
-    session.flow = session.flow.toLocaleLowerCase().trim()
+    session.flow = session.flow.toLocaleLowerCase().trim() as DoctorFlows
   }
 
   // TODO: Hacer un mapeo de mensajes a flujos
@@ -65,6 +67,9 @@ export const doctorFlow = async (sock: WASocket, messageInfo: proto.IWebMessageI
       break
     case 'consultas':
       await queries(sock, messageInfo, session)
+      break
+    case 'servicios':
+      // TODO
       break
   }
 
