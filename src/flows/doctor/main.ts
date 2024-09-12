@@ -7,6 +7,7 @@ import { cancelDate } from './cancelDate'
 import { askToAI } from '../../services/ai'
 import { queries } from './queries'
 import { DoctorFlows } from '../../types/utils.types'
+import { addService } from './addService'
 
 // Estado global para rastrear la conversación del usuario
 const userSessions = new Map<string, Session>()
@@ -69,7 +70,7 @@ export const doctorFlow = async (sock: WASocket, messageInfo: proto.IWebMessageI
       await queries(sock, messageInfo, session)
       break
     case 'servicios':
-      // TODO
+      await addService(sock, messageInfo, session)
       break
   }
 

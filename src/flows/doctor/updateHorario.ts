@@ -34,7 +34,7 @@ export const updateHorarioDoctor = async (sock: WASocket, messageInfo: proto.IWe
       doctorPayload.day = messageText.toLocaleLowerCase() as WeekDays
       session.payload = doctorPayload
       await sock.sendMessage(from!, { text: 'Gracias, ahora crearé tu horario.' })
-      const createSchedule: ScheduleCreate = { day: doctorPayload.day, init: doctorPayload.start, end: doctorPayload.end, id_doctor: id_doctor }
+      const createSchedule: ScheduleCreate = { day: doctorPayload.day as WeekDays, init: doctorPayload.start, end: doctorPayload.end, id_doctor: id_doctor }
       await ScheduleRepository.createEntry(createSchedule)
       await sock.sendMessage(from!, { text: `Horario creado. ¡Felicidades!\n- ${doctorPayload.day}: ${doctorPayload.start} - ${doctorPayload.end}` })
       session.step = 0

@@ -22,7 +22,7 @@ export const createDatabase = async () => {
       phone     varchar(20)  not null,
       dni       varchar(8)   not null
     );
-`
+    `
   const queryDoctor = `
     create table if not exists doctor
     (
